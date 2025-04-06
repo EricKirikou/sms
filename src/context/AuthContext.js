@@ -18,23 +18,33 @@ export const AuthProvider = ({ children }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json' // Explicitly request JSON
         },
         body: JSON.stringify({ username, password, role }),
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+  
+      // First check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        throw new Error(`Invalid response format: ${text.substring(0, 100)}`);
       }
-
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.message || `Server error: ${response.status}`);
+      }
+  
       setUser(data.user);
       localStorage.setItem('user', JSON.stringify(data.user));
       localStorage.setItem('token', data.token);
-
+  
       return { success: true, user: data.user };
     } catch (error) {
-      setError(error.message);
+      setError(error.message.includes('Invalid response format') 
+        ? 'Server returned an unexpected response'
+        : error.message);
       return { success: false, message: error.message };
     } finally {
       setLoading(false);
