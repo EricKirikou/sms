@@ -3,7 +3,7 @@ const API_BASE_URL = 'https://sukuu-backend.onrender.com/v1/api';
 const apiService = {
   // Auth Service
   login: async (username, password, role) => {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    const response = await fetch(`${API_BASE_URL}/v1/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password, role }),
