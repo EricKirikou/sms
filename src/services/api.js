@@ -3,15 +3,21 @@ const API_BASE_URL = 'https://sukuu-backend.onrender.com/v1/api';
 const apiService = {
   // Auth Service
   login: async (username, password, role) => {
-    const response = await fetch(`${API_BASE_URL}/v1/api/auth/login`, {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password, role }),
       credentials: 'include'
     });
+    // return await response.json();
+    // const contentType = response.headers.get('content-type');
+    // if (!contentType || !contentType.includes('application/json')) {
+    //   const text = await response.text();
+    //   throw new Error(`Expected JSON but got: ${text}`);
+    // }
+    
     return await response.json();
   },
-
   // Student Services
   addStudent: async (studentData) => {
     const response = await fetch(`${API_BASE_URL}/student/add`, {

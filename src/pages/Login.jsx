@@ -44,8 +44,7 @@ const Login = () => {
     try {
       const result = await login(data.username, data.password, data.role);
   
-      if (result.success) {
-        // Navigate based on role
+      if (result?.success) {
         const redirectPath = {
           admin: '/AdminDashboard',
           employee: '/EmployeeDashboard',
@@ -54,11 +53,13 @@ const Login = () => {
         
         navigate(redirectPath);
       } else {
-        setError(result.message || 'Login failed. Please check your credentials.');
+        setError(result?.message || 'Login failed. Please check your credentials.');
       }
     } catch (error) {
       console.error('Login error:', error);
-      setError('Network error. Please try again later.');
+      setError(error.message.includes('Expected JSON') 
+        ? 'Server configuration error. Please contact support.' 
+        : 'Network error. Please try again later.');
     } finally {
       setIsLoading(false);
     }

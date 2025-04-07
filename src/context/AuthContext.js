@@ -1,53 +1,25 @@
 import React, { createContext, useState, useContext } from 'react';
+import api from '../services/api';  // Correct import path for api.js
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
-  const API_BASE_URL = 'https://sukuu-backend.onrender.com';
 
   const login = async (username, password, role) => {
-    setLoading(true);
-    setError(null);
-    
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json' // Explicitly request JSON
-        },
-        body: JSON.stringify({ username, password, role }),
-      });
-  
-      // First check if response is JSON
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text();
-        throw new Error(`Invalid response format: ${text.substring(0, 100)}`);
+      const response = await api.login(username, password, role);  // Using api instead of apiService
+      
+      if (response.success) {
+        setUser({ username, role, token: response.token });
+        localStorage.setItem('user', JSON.stringify({ username, role, token: response.token }));
+        return { success: true };
       }
-  
-      const data = await response.json();
-  
-      if (!response.ok) {
-        throw new Error(data.message || `Server error: ${response.status}`);
-      }
-  
-      setUser(data.user);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      localStorage.setItem('token', data.token);
-  
-      return { success: true, user: data.user };
+      return { success: false, message: response.message };
     } catch (error) {
-      setError(error.message.includes('Invalid response format') 
-        ? 'Server returned an unexpected response'
-        : error.message);
-      return { success: false, message: error.message };
-    } finally {
-      setLoading(false);
+      console.error('Login error:', error);
+      return { success: false, message: error.message || 'Login failed' };
     }
   };
 
@@ -60,7 +32,6 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={{ 
       user,
-      loading,
       error,
       login,
       logout,
